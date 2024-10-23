@@ -1,28 +1,30 @@
 import RPi.GPIO as GPIO
 import serial
 from time import sleep
+import re
 
 # for sparkqEE gps module https://web.archive.org/web/20220709043726/http://www.sparqee.com/portfolio/sparqee-gps/
 # Connect to raspberry pi UART interface (GPIO14 - TX, GPIO15 - RX)
-# need one pin for enable/disable the module (GPIO4)
+# need one pin for enable/disable the module (GPIO4) ** either that or just pull pin high to 3.3v
 
 
 class GpsLogger:
     def __init__(self):
-        self.enable_pin = 4
+        # self.enable_pin = 4
         self.running = True
 
-        GPIO.setmode(GPIO.BCM)
-        GPIO.setup(self.enable_pin, GPIO.OUT)
-        GPIO.output(self.enable_pin, GPIO.LOW)
+        # GPIO.setmode(GPIO.BCM)
+        # GPIO.setup(self.enable_pin, GPIO.OUT)
+        # GPIO.output(self.enable_pin, GPIO.LOW)
 
-    def __del__(self):
-        GPIO.output(self.enable_pin, GPIO.LOW)
-        GPIO.cleanup()
+    # def __del__(self):
+    #     # disable gps module
+    #     GPIO.output(self.enable_pin, GPIO.LOW)
+    #     GPIO.cleanup()
 
     def start(self):
         # enable the gps module
-        GPIO.output(self.enable_pin, GPIO.HIGH)
+        # GPIO.output(self.enable_pin, GPIO.HIGH)
 
         print("Opening serial port...")
         num_lines = 0
@@ -36,15 +38,21 @@ class GpsLogger:
                 # if '$GPGGA' in line:
                 #     print(line)
 
-                # print(line)
+                # debug print whole line
+                print(line)
+
                 if line:
                     num_lines += 1
                     print(f'num lines received: {num_lines}')
-                if '$GPGGA' in line:
-                    data = line.split(',')[:-1]
-                    lat, lon, altitude = self.parse_GPGGA(line)
-                    print(data)
-                    print(f"Coords: {lat}, {lon}    Altitude: {altitude}")
+                    try:
+                        if '$GPGGA' in line:
+                            data = line.split(',')
+                            lat, lon, altitude = self.parse_GPGGA(line)
+                            print(f'Data: {data}')
+                            print(f"Coords: {lat}, {lon}    Altitude: {altitude}")
+                    except Exception as e:
+                        print(f"Error: {e}")
+                        print(f"This is the line: {line}")
 
                 sleep(1)
 
