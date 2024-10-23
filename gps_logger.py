@@ -56,6 +56,7 @@ class GpsLogger:
 
                 sleep(1)
 
+    # this is wrong i think
     def parse_GPGGA(self, data):
         parts = data.split(',')
         if parts[0] == '$GPGGA':
