@@ -1,81 +1,38 @@
-import RPi.GPIO as GPIO
+import io
+import pynmea2
 import serial
-from time import sleep
-import re
-
-# for sparkqEE gps module https://web.archive.org/web/20220709043726/http://www.sparqee.com/portfolio/sparqee-gps/
-# Connect to raspberry pi UART interface (GPIO14 - TX, GPIO15 - RX)
-# need one pin for enable/disable the module (GPIO4) ** either that or just pull pin high to 3.3v
-
 
 class GpsLogger:
-    def __init__(self):
+    def __init__(self, serial_port='/dev/serial0', baudrate=9600):
+        self.serial_port = serial_port
+        self.baudrate = baudrate
         self.running = True
+        self.debug = False
 
     def start(self):
         print("Opening serial port...")
-        with serial.Serial('/dev/serial0', baudrate=9600, timeout=1) as ser:
+        with serial.Serial(self.serial_port, baudrate=self.baudrate, timeout=1) as ser:
+            sio = io.TextIOWrapper(io.BufferedRWPair(ser, ser), encoding='ascii')
             print("Waiting for GPS data...")
             while self.running:
-                line = ser.readline().decode('ascii', errors='replace').strip()
-                # if line.startswith('$GPGGA'):
-                #     lat, lon, altitude = self.parse_GPGGA(line)
-                #     print(f"Coords: {lat}, {lon}    Altitude: {altitude}")
-                # if '$GPGGA' in line:
-                #     print(line)
+                try:
+                    line = sio.readline()
+                    msg = pynmea2.parse(line)
+                    if self.debug:
+                        print(repr(msg))
+                    print(f"Coords: {msg.latitude}, {msg.longitude}")
+                except serial.SerialException as e:
+                    print('Device error: {}'.format(e))
+                    break
+                except pynmea2.ParseError as e:
+                    if self.debug:
+                        print('Parse error: {}'.format(e))
+                    continue
+                except Exception as e:
+                    if self.debug:
+                        print(f'Exception {e}')
+                    continue
 
-                if line:
-                    if line.startswith('$GPGGA'):
-                        lat, lon, altitude = self.parse_GPGGA(line)
-                        print(line)
-                    elif line.startswith(''):
-                        pass
-
-                # debug print whole line
-                # print(line)
-
-                # if line:
-                #     num_lines += 1
-                #     print(f'num lines received: {num_lines}')
-                #     try:
-                #         if '$GPGGA' in line:
-                #             num_GPGGA += 1
-                #             print(f"num GPGGA: {num_GPGGA}")
-                #             data = line.split(',')
-                #             lat, lon, altitude = self.parse_GPGGA(line)
-                #             print(f'Data: {data}')
-                #             print(f"Coords: {lat}, {lon}    Altitude: {altitude}")
-                #     except Exception as e:
-                #         print(f"Error: {e}")
-                #         print(f"This is the line: {line}")
-
-                sleep(0.01)
-
-    # this is wrong i think
-    def parse_GPGGA(self, data):
-        parts = data.split(',')
-        if parts[0] == '$GPGGA':
-            try:
-                lat_raw = parts[2]
-                lat_dir = parts[3]
-                lon_raw = parts[4]
-                lon_dir = parts[5]
-                altitude = parts[9]
-                lat = self.convert_to_decimal(lat_raw, lat_dir)
-                lon = self.convert_to_decimal(lon_raw, lon_dir)
-                return lat, lon, altitude
-            except IndexError:
-                return None, None, None
-
-    def convert_to_decimal(self, value, direction):
-        if value == '' or direction == '':
-            return None
-        degrees = int(value[:2])
-        minutes = float(value[2:])
-        decimal = degrees + (minutes / 60)
-        if direction in ['S', 'W']:
-            decimal *= -1
-        return decimal
 
 if __name__ == '__main__':
     try:
@@ -83,3 +40,4 @@ if __name__ == '__main__':
         gps_logger.start()
     except KeyboardInterrupt:
         gps_logger.running = False
+        print('Exiting')
