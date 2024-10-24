@@ -10,24 +10,10 @@ import re
 
 class GpsLogger:
     def __init__(self):
-        # self.enable_pin = 4
         self.running = True
 
-        # GPIO.setmode(GPIO.BCM)
-        # GPIO.setup(self.enable_pin, GPIO.OUT)
-        # GPIO.output(self.enable_pin, GPIO.LOW)
-
-    # def __del__(self):
-    #     # disable gps module
-    #     GPIO.output(self.enable_pin, GPIO.LOW)
-    #     GPIO.cleanup()
-
     def start(self):
-        # enable the gps module
-        # GPIO.output(self.enable_pin, GPIO.HIGH)
-
         print("Opening serial port...")
-        num_lines = 0
         with serial.Serial('/dev/serial0', baudrate=9600, timeout=1) as ser:
             print("Waiting for GPS data...")
             while self.running:
@@ -38,23 +24,32 @@ class GpsLogger:
                 # if '$GPGGA' in line:
                 #     print(line)
 
-                # debug print whole line
-                print(line)
-
                 if line:
-                    num_lines += 1
-                    print(f'num lines received: {num_lines}')
-                    try:
-                        if '$GPGGA' in line:
-                            data = line.split(',')
-                            lat, lon, altitude = self.parse_GPGGA(line)
-                            print(f'Data: {data}')
-                            print(f"Coords: {lat}, {lon}    Altitude: {altitude}")
-                    except Exception as e:
-                        print(f"Error: {e}")
-                        print(f"This is the line: {line}")
+                    if line.startswith('$GPGGA'):
+                        lat, lon, altitude = self.parse_GPGGA(line)
+                        print(line)
+                    elif line.startswith(''):
+                        pass
 
-                sleep(1)
+                # debug print whole line
+                # print(line)
+
+                # if line:
+                #     num_lines += 1
+                #     print(f'num lines received: {num_lines}')
+                #     try:
+                #         if '$GPGGA' in line:
+                #             num_GPGGA += 1
+                #             print(f"num GPGGA: {num_GPGGA}")
+                #             data = line.split(',')
+                #             lat, lon, altitude = self.parse_GPGGA(line)
+                #             print(f'Data: {data}')
+                #             print(f"Coords: {lat}, {lon}    Altitude: {altitude}")
+                #     except Exception as e:
+                #         print(f"Error: {e}")
+                #         print(f"This is the line: {line}")
+
+                sleep(0.01)
 
     # this is wrong i think
     def parse_GPGGA(self, data):
