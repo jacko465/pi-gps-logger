@@ -2,7 +2,7 @@ import os
 import pygame
 
 os.putenv('SDL_FBDEV', '/dev/fb1')
-# os.putenv('SDL_VIDEODRIVER', 'fbcon')
+os.putenv('SDL_VIDEODRIVER', 'fbcon')
 
 print("pygame init")
 pygame.init()
