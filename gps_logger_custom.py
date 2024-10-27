@@ -32,8 +32,8 @@ class GpsLogger:
                     elif line.startswith('$GPGLL'):
                         data = self.parse_GPGLL(line)
                     
+                    print(line)
                     if data:
-                        print(line)
                         print(f"packet type: {data.get('packet_type')}    coords: {data.get('lat')}, {data.get('lon')}    altitude: {data.get('altitude')}")
 
                 sleep(0.01)
