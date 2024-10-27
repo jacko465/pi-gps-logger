@@ -38,7 +38,7 @@ if __name__ == '__main__':
             gps_tft.start_thread()
             while not gps_tft.shutdown_event.is_set():
                 if gps_tft.gps_fix:
-                    gps_text = f'Coords:\n{gps_tft.lat},{gps_tft.lon}\nAltitude: {gps_tft.altitude}'
+                    gps_text = f'Coords:\n{round(gps_tft.lat, 4)},{round(gps_tft.lon, 4)}\nAltitude: {gps_tft.altitude}'
                     latency_text = f'Msg latency: {round(gps_tft.time_since_update, 3)}'
                     gps_tft.init_image()
                     gps_tft.draw_text(gps_text, (0, 0), text_size=20)
