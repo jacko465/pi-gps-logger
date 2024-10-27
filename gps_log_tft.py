@@ -53,3 +53,6 @@ if __name__ == '__main__':
         finally:
             gps_tft.init_image()
             gps_tft.update()
+
+    #TODO: Might have to change the way the packets are being parsed since the signal seems to be noisy.
+    # Investigate if it's worth using regex to grab the packets from the noisy data before parsing them
