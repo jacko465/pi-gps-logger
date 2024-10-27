@@ -12,9 +12,11 @@ class GpsLogger:
         self.shutdown_event = None  # threading event placeholder
         self.running_thread = None  # daemon thread placeholder
         self.debug = False
+        print('gps logger init')
 
     def start_thread(self):
         print("Starting gps_serial thread")
+        self.shutdown_event = threading.Event()
         self.running_thread = threading.Thread(target=self.gps_serial, daemon=True)
         self.running_thread.start()
 
@@ -23,7 +25,6 @@ class GpsLogger:
         with serial.Serial(self.serial_port, baudrate=self.baudrate, timeout=1) as ser:
             sio = io.TextIOWrapper(io.BufferedRWPair(ser, ser), encoding=self.serial_encoding)
             print("Waiting for GPS data...")
-            self.shutdown_event = threading.Event()
             while not self.shutdown_event.is_set():
                 try:
                     line = sio.readline()
@@ -31,6 +32,7 @@ class GpsLogger:
                     self.msg_handler(msg)
                 except serial.SerialException as e:
                     print(f'Device error: {e}')
+                    self.shutdown_event.set()
                     break
                 except pynmea2.ParseError as e:
                     if self.debug:
