@@ -22,6 +22,7 @@ class GpsKalman(GpsLogger):
         self.running_thread.join()
 
     def msg_handler(self, msg):
+        print(f"Received GPS message: {msg}")
         timestamp = msg.timestamp
         latitude = msg.latitude
         longitude = msg.longitude
