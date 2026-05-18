@@ -32,16 +32,12 @@ class GpsKalman(GpsLogger):
         # convert to xy coords
         gps_x, gps_y = self.convert_to_xy(latitude, longitude)
 
-        print(f"Converted GPS to (x: {gps_x:.2f} m, y: {gps_y:.2f} m)")
+        # print(f"Converted GPS to (x: {gps_x:.2f} m, y: {gps_y:.2f} m)")
 
         if self.last_timestamp is not None:
             dt = self.get_dt_from_timestamps(self.last_timestamp, timestamp)
             self.kalman_filter.step(gps_x, gps_y, dt)
-            print(f"Received GPS message at {timestamp}, current dt: {dt:.2f} s")
-            print(f"Raw GPS: ({latitude}, {longitude}) -> (x: {gps_x:.2f} m, y: {gps_y:.2f} m)")
-            print(f"Filtered GPS: (x: {self.kalman_filter.x:.2f} m, y: {self.kalman_filter.y:.2f} m)")
-            print(f"Velocity: (vx: {self.kalman_filter.x_dot:.2f} m/s, vy: {self.kalman_filter.y_dot:.2f} m/s, speed: {self.kalman_filter.speed:.2f} m/s)")
-            print('='*40)
+            self.report_gps_data(timestamp, dt, latitude, longitude, self.kalman_filter.x, self.kalman_filter.y)
         else:
             print(f"Received first GPS message at {timestamp}, waiting for next to compute dt")
 
@@ -77,6 +73,17 @@ class GpsKalman(GpsLogger):
         longitude = np.degrees(x / R)
         latitude = np.degrees(y / R)
         return latitude, longitude
+    
+    def report_gps_data(self, timestamp, dt, latitude, longitude, filtered_x, filtered_y):
+        # print(f"Received GPS message at {timestamp}, current dt: {dt:.2f} s")
+        # print(f"Raw GPS: ({latitude}, {longitude}) -> (x: {gps_x:.2f} m, y: {gps_y:.2f} m)")
+        # print(f"Filtered GPS: (x: {self.kalman_filter.x:.2f} m, y: {self.kalman_filter.y:.2f} m)")
+        # print(f"Velocity: (vx: {self.kalman_filter.x_dot:.2f} m/s, vy: {self.kalman_filter.y_dot:.2f} m/s, speed: {self.kalman_filter.speed:.2f} m/s)")
+        # print('='*40)
+        
+        filtered_lat, filtered_lon = self.convert_to_latlon(filtered_x, filtered_y)
+
+        print(f"[{timestamp}] Raw GPS: ({latitude:.6f}, {longitude:.6f}) -> (x: {filtered_lat:.6f} m, y: {filtered_lon:.6f} m), dt: {dt:.2f} s, velocity: ({self.kalman_filter.x_dot:.2f} m/s, {self.kalman_filter.y_dot:.2f} m/s, speed: {self.kalman_filter.speed:.2f} m/s)")
 
 
 if __name__ == '__main__':
