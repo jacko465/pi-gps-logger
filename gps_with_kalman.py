@@ -24,6 +24,9 @@ class GpsKalman(GpsLogger):
         self.running_thread.join()
 
     def msg_handler(self, msg):
+        if not self.is_valid_gps_data(msg):
+            print("Received invalid GPS data, skipping")
+            return
         timestamp = msg.timestamp
         latitude = msg.latitude
         longitude = msg.longitude
@@ -51,6 +54,25 @@ class GpsKalman(GpsLogger):
             )
 
         self.last_timestamp = timestamp
+
+    def is_valid_gps_data(self, msg) -> bool:
+        # check for valid latitude and longitude
+        lat = getattr(msg, "latitude", None)
+        lon = getattr(msg, "longitude", None)
+
+        if lat is None or lon is None:
+            return False
+
+        if lat == 0.0 and lon == 0.0:
+            return False
+
+        if not (-90.0 <= lat <= 90.0):
+            return False
+
+        if not (-180.0 <= lon <= 180.0):
+            return False
+
+        return True
 
     def get_dt_from_timestamps(self, t1: datetime.time, t2: datetime.time) -> float:
         s1 = self.seconds_since_midnight(t1)
