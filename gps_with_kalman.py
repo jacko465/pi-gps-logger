@@ -8,7 +8,8 @@ class GpsKalman(GpsLogger):
     def __init__(self):
         super().__init__()
 
-        self.kalman_filter = GPSKalmanFilter()
+        # self.kalman_filter = GPSKalmanFilter()
+        self.kalman_filter = None
         self.last_timestamp = None
 
     def start(self):
@@ -39,7 +40,8 @@ class GpsKalman(GpsLogger):
             self.kalman_filter.step(gps_x, gps_y, dt)
             self.report_gps_data(timestamp, dt, latitude, longitude, self.kalman_filter.x, self.kalman_filter.y)
         else:
-            print(f"Received first GPS message at {timestamp}, waiting for next to compute dt")
+            print(f"Received first GPS message, initialising kalman filter with initial coordinates (x: {gps_x:.2f} m, y: {gps_y:.2f} m)")
+            self.kalman_filter = GPSKalmanFilter(initial_x=gps_x, initial_y=gps_y)
 
         self.last_timestamp = timestamp
 
