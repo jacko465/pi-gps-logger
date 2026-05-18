@@ -27,6 +27,8 @@ class GpsKalman(GpsLogger):
         latitude = msg.latitude
         longitude = msg.longitude
 
+        print(f"Raw GPS: ({latitude}, {longitude}) at {timestamp}")
+
         # convert to xy coords
         gps_x, gps_y = self.convert_to_xy(latitude, longitude)
 
@@ -57,5 +59,9 @@ if __name__ == '__main__':
         while not gps_kalman.shutdown_event.is_set():
             pass
     except KeyboardInterrupt:
+        gps_kalman.stop()
+        print('Exiting')
+    except Exception as e:
+        print(f"Exception: {e}")
         gps_kalman.stop()
         print('Exiting')
