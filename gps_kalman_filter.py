@@ -112,6 +112,7 @@ class GPSKalmanFilter:
         ], dtype=float)
 
     def predict(self, dt: float):
+        print("in predict step")
         """
             mu_bar = A * mu
             sigma_bar = A * sigma * A^T + R
@@ -123,6 +124,7 @@ class GPSKalmanFilter:
         self.sigma = A @ self.sigma @ A.T + R
 
     def update(self, gps_x: float, gps_y: float, sigma_gps: float | None = None):
+        print("in update step")
         """
             Update/correction step using GPS measurement
 
@@ -154,8 +156,10 @@ class GPSKalmanFilter:
         """
             Convenience method to perform a full predict-update cycle
         """
+        print("in step")
         self.predict(dt)
         self.update(gps_x, gps_y, sigma_gps)
+        print("leaving step")
 
     # properties to access state
     @property

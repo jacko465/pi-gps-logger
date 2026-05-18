@@ -26,7 +26,7 @@ class GpsKalman(GpsLogger):
         latitude = msg.latitude
         longitude = msg.longitude
 
-        print(f"Raw GPS: ({latitude}, {longitude}) at {timestamp}")
+        # print(f"Raw GPS: ({latitude}, {longitude}) at {timestamp}")
 
         # convert to xy coords
         gps_x, gps_y = self.convert_to_xy(latitude, longitude)
@@ -53,6 +53,12 @@ class GpsKalman(GpsLogger):
         x = R * np.radians(longitude)
         y = R * np.radians(latitude)
         return x, y
+    
+    def convert_to_latlon(self, x: float, y: float) -> tuple[float, float]:
+        R = 6371000  # Earth radius in meters
+        longitude = np.degrees(x / R)
+        latitude = np.degrees(y / R)
+        return latitude, longitude
 
 
 if __name__ == '__main__':
