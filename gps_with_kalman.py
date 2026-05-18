@@ -42,7 +42,13 @@ class GpsKalman(GpsLogger):
                 self.report_gps_data(timestamp, dt, latitude, longitude, self.kalman_filter.x, self.kalman_filter.y)
         else:
             print(f"Received first GPS message, initialising kalman filter with initial coordinates (x: {gps_x:.2f} m, y: {gps_y:.2f} m)")
-            self.kalman_filter = GPSKalmanFilter(initial_x=gps_x, initial_y=gps_y)
+            self.kalman_filter = GPSKalmanFilter(
+                initial_x=gps_x, 
+                initial_y=gps_y,
+                sigma_gps=5.0,              # typical GPS accuracy in meters
+                sigma_accel=0.5,            # typical acceleration noise in m/s^2
+                initial_velocity_std=1.0    # initial velocity standard deviation in m/s    
+            )
 
         self.last_timestamp = timestamp
 
