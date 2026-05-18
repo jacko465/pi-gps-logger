@@ -22,7 +22,6 @@ class GpsKalman(GpsLogger):
         self.running_thread.join()
 
     def msg_handler(self, msg):
-        print(f"Received GPS message: {msg}")
         timestamp = msg.timestamp
         latitude = msg.latitude
         longitude = msg.longitude
@@ -32,10 +31,14 @@ class GpsKalman(GpsLogger):
         # convert to xy coords
         gps_x, gps_y = self.convert_to_xy(latitude, longitude)
 
+        print(f"Converted GPS to (x: {gps_x:.2f} m, y: {gps_y:.2f} m)")
+
         if self.last_timestamp is not None:
             dt = (timestamp - self.last_timestamp).total_seconds()
             self.last_timestamp = timestamp
             self.kalman_filter.step(gps_x, gps_y, dt)
+        else:
+            self.last_timestamp = timestamp
 
         print(f"Received GPS message at {timestamp}, current dt: {dt:.2f} s")
         print(f"Raw GPS: ({latitude}, {longitude}) -> (x: {gps_x:.2f} m, y: {gps_y:.2f} m)")
