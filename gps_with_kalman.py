@@ -37,14 +37,14 @@ class GpsKalman(GpsLogger):
             dt = (timestamp - self.last_timestamp).total_seconds()
             self.last_timestamp = timestamp
             self.kalman_filter.step(gps_x, gps_y, dt)
+            print(f"Received GPS message at {timestamp}, current dt: {dt:.2f} s")
+            print(f"Raw GPS: ({latitude}, {longitude}) -> (x: {gps_x:.2f} m, y: {gps_y:.2f} m)")
+            print(f"Filtered GPS: (x: {self.kalman_filter.x:.2f} m, y: {self.kalman_filter.y:.2f} m)")
+            print(f"Velocity: (vx: {self.kalman_filter.x_dot:.2f} m/s, vy: {self.kalman_filter.y_dot:.2f} m/s, speed: {self.kalman_filter.speed:.2f} m/s)")
+            print('='*40)
         else:
             self.last_timestamp = timestamp
-
-        print(f"Received GPS message at {timestamp}, current dt: {dt:.2f} s")
-        print(f"Raw GPS: ({latitude}, {longitude}) -> (x: {gps_x:.2f} m, y: {gps_y:.2f} m)")
-        print(f"Filtered GPS: (x: {self.kalman_filter.x:.2f} m, y: {self.kalman_filter.y:.2f} m)")
-        print(f"Velocity: (vx: {self.kalman_filter.x_dot:.2f} m/s, vy: {self.kalman_filter.y_dot:.2f} m/s, speed: {self.kalman_filter.speed:.2f} m/s)")
-        print('='*40)
+            print(f"Received first GPS message at {timestamp}, waiting for next to compute dt")
 
     
     def convert_to_xy(self, latitude: float, longitude: float) -> tuple[float, float]:
