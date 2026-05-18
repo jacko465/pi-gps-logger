@@ -24,8 +24,8 @@ class GPSKalmanFilter:
     """
     def __init__(
         self,
-        initial_x: float,                   # initial position (meters)
-        initial_y: float,                   # initial position (meters)
+        initial_x: float = 0.0,                   # initial position (meters)
+        initial_y: float = 0.0,                   # initial position (meters)
         sigma_gps: float = 5.0,             # GPS measurement noise (meters)
         sigma_accel: float = 2.0,           # Acceleration noise (m/s^2)
         initial_velocity_std: float = 10.0  # Initial velocity uncertainty (m/s)
