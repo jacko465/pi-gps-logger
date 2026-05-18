@@ -85,7 +85,7 @@ class GpsKalman(GpsLogger):
         
         filtered_lat, filtered_lon = self.convert_to_latlon(filtered_x, filtered_y)
 
-        print(f"[{timestamp}] Raw GPS: ({latitude:.6f}, {longitude:.6f}) -> (x: {filtered_lat:.6f} m, y: {filtered_lon:.6f} m), dt: {dt:.2f} s, velocity: ({self.kalman_filter.x_dot:.2f} m/s, {self.kalman_filter.y_dot:.2f} m/s, speed: {self.kalman_filter.speed:.2f} m/s)")
+        print(f"[{timestamp}] Raw GPS: ({latitude:.6f}, {longitude:.6f}) -> (x: {filtered_lat:.6f} m, y: {filtered_lon:.6f} m), dt: {dt:.4f} s, velocity: ({self.kalman_filter.x_dot:.2f} m/s, {self.kalman_filter.y_dot:.2f} m/s, speed: {self.kalman_filter.speed:.2f} m/s)")
 
 
 if __name__ == '__main__':
