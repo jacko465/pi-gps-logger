@@ -1,5 +1,6 @@
 from gps_kalman_filter import GPSKalmanFilter
 from gps_logger import GpsLogger
+import datetime
 import numpy as np
 import threading
 
@@ -34,8 +35,7 @@ class GpsKalman(GpsLogger):
         print(f"Converted GPS to (x: {gps_x:.2f} m, y: {gps_y:.2f} m)")
 
         if self.last_timestamp is not None:
-            dt = (timestamp - self.last_timestamp).total_seconds()
-            self.last_timestamp = timestamp
+            dt = self.get_dt_from_timestamps(self.last_timestamp, timestamp)
             self.kalman_filter.step(gps_x, gps_y, dt)
             print(f"Received GPS message at {timestamp}, current dt: {dt:.2f} s")
             print(f"Raw GPS: ({latitude}, {longitude}) -> (x: {gps_x:.2f} m, y: {gps_y:.2f} m)")
@@ -43,9 +43,27 @@ class GpsKalman(GpsLogger):
             print(f"Velocity: (vx: {self.kalman_filter.x_dot:.2f} m/s, vy: {self.kalman_filter.y_dot:.2f} m/s, speed: {self.kalman_filter.speed:.2f} m/s)")
             print('='*40)
         else:
-            self.last_timestamp = timestamp
             print(f"Received first GPS message at {timestamp}, waiting for next to compute dt")
 
+        self.last_timestamp = timestamp
+
+    def get_dt_from_timestamps(self, t1: datetime.time, t2: datetime.time) -> float:
+        s1 = self.seconds_since_midnight(t1)
+        s2 = self.seconds_since_midnight(t2)
+        dt = s2 - s1
+
+        if dt < 0:
+            dt += 24 * 3600  # handle midnight rollover
+        
+        return dt
+
+    def seconds_since_midnight(self, t: datetime.time) -> float:
+        return(
+            t.hour * 3600 +
+            t.minute * 60 +
+            t.second +
+            t.microsecond / 1e6
+        )
     
     def convert_to_xy(self, latitude: float, longitude: float) -> tuple[float, float]:
         # simple equirectangular approximation for small distances
