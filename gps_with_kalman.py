@@ -40,9 +40,9 @@ class GpsKalman(GpsLogger):
             if dt > 0.0:    # only update if we have a valid time difference
                 if not self.is_valid_gps_data(msg):
                     print("Received invalid GPS data, skipping")
-                    return
-                self.kalman_filter.step(gps_x, gps_y, dt)
-                self.report_gps_data(timestamp, dt, latitude, longitude, self.kalman_filter.x, self.kalman_filter.y)
+                else:
+                    self.kalman_filter.step(gps_x, gps_y, dt)
+                    self.report_gps_data(timestamp, dt, latitude, longitude, self.kalman_filter.x, self.kalman_filter.y)
         else:
             print(f"Received first GPS message, initialising kalman filter with initial coordinates (x: {gps_x:.2f} m, y: {gps_y:.2f} m)")
             self.kalman_filter = GPSKalmanFilter(
