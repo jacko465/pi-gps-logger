@@ -37,8 +37,9 @@ class GpsKalman(GpsLogger):
 
         if self.last_timestamp is not None:
             dt = self.get_dt_from_timestamps(self.last_timestamp, timestamp)
-            self.kalman_filter.step(gps_x, gps_y, dt)
-            self.report_gps_data(timestamp, dt, latitude, longitude, self.kalman_filter.x, self.kalman_filter.y)
+            if dt > 0.0:    # only update if we have a valid time difference
+                self.kalman_filter.step(gps_x, gps_y, dt)
+                self.report_gps_data(timestamp, dt, latitude, longitude, self.kalman_filter.x, self.kalman_filter.y)
         else:
             print(f"Received first GPS message, initialising kalman filter with initial coordinates (x: {gps_x:.2f} m, y: {gps_y:.2f} m)")
             self.kalman_filter = GPSKalmanFilter(initial_x=gps_x, initial_y=gps_y)
