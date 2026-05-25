@@ -4,6 +4,7 @@ import datetime
 import numpy as np
 import threading
 import pandas as pd
+import os
 
 class GpsKalman(GpsLogger):
     def __init__(self):
@@ -126,9 +127,10 @@ class GpsKalman(GpsLogger):
         print(f"[{timestamp}] Raw GPS: ({latitude:.6f}, {longitude:.6f}) -> Filtered GPS: ({filtered_lat:.6f}, {filtered_lon:.6f}), dt: {dt:.2f} s, velocity: ({self.kalman_filter.x_dot:.2f} m/s, {self.kalman_filter.y_dot:.2f} m/s, speed: {self.kalman_filter.speed:.2f} m/s)")
 
     def save_gps_csv(self):
+        os.makedirs('output', exist_ok=True)
         df = pd.DataFrame(self.gps_data_records)
-        df.to_csv('gps_data.csv', index=False)
-        print("Saved GPS data to gps_data.csv")
+        df.to_csv('output/gps_data.csv', index=False)
+        print("Saved GPS data to output/gps_data.csv")
 
 
 if __name__ == '__main__':
