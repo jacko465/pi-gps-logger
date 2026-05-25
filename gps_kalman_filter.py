@@ -88,7 +88,7 @@ class GPSKalmanFilter:
                 Not measuring acceleration (ax, ay) directly, modelling it as zero-mean noise
                 with variance sigma_accel^2
 
-                R = G * sigma * G^T where G maps acceleration noise into state space
+                R = G * sigma * G^T where G maps acceleration noise into state space (Jacobian)
         """
         sigma_a2 = self.sigma_accel**2
 
