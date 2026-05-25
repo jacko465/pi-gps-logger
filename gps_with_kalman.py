@@ -3,6 +3,7 @@ from gps_logger import GpsLogger
 import datetime
 import numpy as np
 import threading
+import pandas as pd
 
 class GpsKalman(GpsLogger):
     def __init__(self):
@@ -11,6 +12,8 @@ class GpsKalman(GpsLogger):
         # self.kalman_filter = GPSKalmanFilter()
         self.kalman_filter = None
         self.last_timestamp = None
+        
+        self.gps_data_records = []
 
     def start(self):
         print("Starting GPS Kalman Filter")
@@ -105,16 +108,27 @@ class GpsKalman(GpsLogger):
         latitude = np.degrees(y / R)
         return latitude, longitude
     
-    def report_gps_data(self, timestamp, dt, latitude, longitude, filtered_x, filtered_y):
-        # print(f"Received GPS message at {timestamp}, current dt: {dt:.2f} s")
-        # print(f"Raw GPS: ({latitude}, {longitude}) -> (x: {gps_x:.2f} m, y: {gps_y:.2f} m)")
-        # print(f"Filtered GPS: (x: {self.kalman_filter.x:.2f} m, y: {self.kalman_filter.y:.2f} m)")
-        # print(f"Velocity: (vx: {self.kalman_filter.x_dot:.2f} m/s, vy: {self.kalman_filter.y_dot:.2f} m/s, speed: {self.kalman_filter.speed:.2f} m/s)")
-        # print('='*40)
-        
+    def report_gps_data(self, timestamp, dt, latitude, longitude, filtered_x, filtered_y):        
         filtered_lat, filtered_lon = self.convert_to_latlon(filtered_x, filtered_y)
 
+        self.gps_data_records.append({
+            "timestamp": timestamp,
+            "dt": dt,
+            "raw_latitude": latitude,
+            "raw_longitude": longitude,
+            "filtered_latitude": filtered_lat,
+            "filtered_longitude": filtered_lon,
+            "velocity_x": self.kalman_filter.x_dot,
+            "velocity_y": self.kalman_filter.y_dot,
+            "speed": self.kalman_filter.speed
+        })
+
         print(f"[{timestamp}] Raw GPS: ({latitude:.6f}, {longitude:.6f}) -> Filtered GPS: ({filtered_lat:.6f}, {filtered_lon:.6f}), dt: {dt:.2f} s, velocity: ({self.kalman_filter.x_dot:.2f} m/s, {self.kalman_filter.y_dot:.2f} m/s, speed: {self.kalman_filter.speed:.2f} m/s)")
+
+    def save_gps_csv(self):
+        df = pd.DataFrame(self.gps_data_records)
+        df.to_csv('gps_data.csv', index=False)
+        print("Saved GPS data to gps_data.csv")
 
 
 if __name__ == '__main__':
@@ -125,8 +139,10 @@ if __name__ == '__main__':
             pass
     except KeyboardInterrupt:
         gps_kalman.stop()
-        print('Exiting')
     except Exception as e:
         print(f"Exception: {e}")
         gps_kalman.stop()
-        print('Exiting')
+    finally:
+        gps_kalman.save_gps_csv()
+        print("saved gps data to csv")
+        print("Exiting")

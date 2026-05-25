@@ -2,3 +2,4 @@ pynmea2
 pyserial
 numpy
 Pillow
+pandas
