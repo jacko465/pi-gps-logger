@@ -8,10 +8,13 @@ import os
 import datetime
 
 class GpsKalman(GpsLogger):
-    def __init__(self):
+    def __init__(self, sigma_gps=5.0, sigma_accel=0.5, initial_velocity_std=1.0):
         super().__init__()
+        self.sigma_gps = sigma_gps                          # GPS measurement noise in meters
+        self.sigma_accel = sigma_accel                      # Acceleration noise in m/s^2
+        self.initial_velocity_std = initial_velocity_std    # Initial velocity standard deviation in m/s
 
-        # self.kalman_filter = GPSKalmanFilter()
+        # init kalman filter after first gps message to determine initial position
         self.kalman_filter = None
         self.last_timestamp = None
         
@@ -53,9 +56,9 @@ class GpsKalman(GpsLogger):
             self.kalman_filter = GPSKalmanFilter(
                 initial_x=gps_x, 
                 initial_y=gps_y,
-                sigma_gps=5.0,              # typical GPS accuracy in meters
-                sigma_accel=0.5,            # typical acceleration noise in m/s^2
-                initial_velocity_std=1.0    # initial velocity standard deviation in m/s    
+                sigma_gps=self.sigma_gps,              # typical GPS accuracy in meters
+                sigma_accel=self.sigma_accel,            # typical acceleration noise in m/s^2
+                initial_velocity_std=self.initial_velocity_std    # initial velocity standard deviation in m/s    
             )
 
         self.last_timestamp = timestamp
