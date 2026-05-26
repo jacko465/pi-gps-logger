@@ -14,7 +14,7 @@ import threading
 import time
 
 # Init Adafruit 2.8" resistive TFT+ buttons
-BUTTONS = [17,22,23,27]
+BUTTONS = [27,23,22,17]
 GPIO.setmode(GPIO.BCM)
 for pin in BUTTONS:
     GPIO.setup(pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
@@ -49,6 +49,8 @@ def main():
     tft_updater = None
     gps_kalman = None
     gps_preset = None
+    preset_name = ""
+    screen_update = False
 
     try:
         state = 'IDLE'
@@ -61,15 +63,19 @@ def main():
                 if GPIO.input(BUTTONS[0]) == GPIO.LOW:  # Button 1 pressed
                     state = 'INIT_GPS'
                     gps_preset = stationary_preset
+                    preset_name = "Stationary Preset"
                 elif GPIO.input(BUTTONS[1]) == GPIO.LOW:  # Button 2 pressed
                     state = 'INIT_GPS'
                     gps_preset = walking_preset_1
+                    preset_name = "Walking Preset 1"
                 elif GPIO.input(BUTTONS[2]) == GPIO.LOW:  # Button 3 pressed
                     state = 'INIT_GPS'
                     gps_preset = walking_preset_2
+                    preset_name = "Walking Preset 2"
                 elif GPIO.input(BUTTONS[3]) == GPIO.LOW:  # Button 4 pressed
                     state = 'INIT_GPS'
                     gps_preset = driving_preset_1
+                    preset_name = "Driving Preset 1"
 
             elif state == 'INIT_GPS':
                 gps_kalman = GpsKalman(**gps_preset)
@@ -85,11 +91,12 @@ def main():
                 gps_kalman.save_gps_data_to_csv()
                 gps_kalman = None
                 gps_preset = None
+                preset_name = ""
                 state = 'IDLE'
                 screen_state = 'MAIN_MENU'
 
             # update screen if screen_state has changed
-            if screen_state != prev_screen_state:
+            if (screen_state != prev_screen_state) or screen_update:
                 prev_screen_state = screen_state
 
                 if screen_state == 'INIT':
@@ -98,6 +105,7 @@ def main():
                     screen_state = 'MAIN_MENU'
 
                 elif screen_state == 'MAIN_MENU':
+                    screen_update = False
                     tft_updater.init_image()
                     tft_updater.draw_text('<- Stationary Preset', (5, 0), text_size=20)
                     tft_updater.draw_text('<- Walking Preset 1', (5, 60), text_size=20)
@@ -106,21 +114,30 @@ def main():
                     tft_updater.update()
 
                 elif screen_state == 'GPS_LOGGING':
+                    screen_update = True
+                    latest_record = None
                     if gps_kalman:
                         if gps_kalman.gps_data_records:
                             latest_record = gps_kalman.gps_data_records[-1]
 
                     tft_updater.init_image()
-                    tft_updater.draw_text('GPS Logging...', (10, 50), text_size=20)
-                    tft_updater.draw_text(f'Preset: {gps_preset}', (10, 100), text_size=15)
-                    tft_updater.draw_text('Press Button 1 to Stop and Save', (10, 150), text_size=15)
+                    tft_updater.draw_text('<- Stop and Save', (5, 0), text_size=20)
+                    tft_updater.draw_text(f'GPS Logging - Preset: {preset_name}', (50, 0), text_size=20)
+                    
+                    if latest_record:
+                        tft_updater.draw_text(f"Timestamp: {latest_record['timestamp']}", (5, 60), text_size=15)
+                        tft_updater.draw_text(f"Raw_Lat: {latest_record['raw_latitude']:.6f}     Raw_Lon: {latest_record['raw_longitude']:.6f}", (5, 80), text_size=15)
+                        tft_updater.draw_text(f"Filt_Lat: {latest_record['filtered_latitude']:.6f}     Filt_Lon: {latest_record['filtered_longitude']:.6f}", (5, 100), text_size=15)
+                        tft_updater.draw_text(f"Vel_X: {latest_record['velocity_x']:.2f} m/s     Vel_Y: {latest_record['velocity_y']:.2f} m/s", (5, 120), text_size=15)
+                        speed_kmh = latest_record['speed'] * 3.6
+                        tft_updater.draw_text(f"Speed: {speed_kmh:.2f} km/h     {latest_record['speed']:.2f} m/s", (5, 140), text_size=15)
                     
                     tft_updater.update()
 
                 # small time delay to prevent saturating the screen spi buffer
                 time.sleep(0.1)
 
-    except KeyboardInterrupt as e:
+    except Exception as e:
         print(f"Exception: {e}")
     finally:
         print("Exiting")
