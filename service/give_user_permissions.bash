@@ -1,0 +1,1 @@
+sudo usermod -aG gpio,dialout,video $USER

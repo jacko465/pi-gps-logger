@@ -1,0 +1,1 @@
+sudo systemctl stop gps_launcher.service

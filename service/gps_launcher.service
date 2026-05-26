@@ -1,0 +1,16 @@
+[Unit]
+Description=GPS Mobility Launcher
+After=multi-user.target
+
+[Service]
+Type=simple
+User=exothermic
+WorkingDirectory=/home/exothermic/pi-gps-logger
+ExecStart=/home/exothermic/pi-gps-logger/.venv/bin/python /home/exothermic/pi-gps-logger/mobility_launcher.py
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
