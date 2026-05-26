@@ -89,7 +89,7 @@ def main():
 
             elif state == 'STOP_AND_SAVE':
                 gps_kalman.stop()
-                gps_kalman.save_gps_data_to_csv()
+                gps_kalman.save_gps_csv()
                 gps_kalman = None
                 gps_preset = None
                 preset_name = ""
@@ -122,8 +122,8 @@ def main():
                             latest_record = gps_kalman.gps_data_records[-1]
 
                     tft_updater.init_image()
-                    tft_updater.draw_text('<- Stop and Save', (5, 0), text_size=15)
-                    tft_updater.draw_text(f'GPS Preset: {preset_name}', (100, 0), text_size=15)
+                    tft_updater.draw_text('<- Stop and Save', (5, 0), text_size=12)
+                    tft_updater.draw_text(f'GPS Preset: {preset_name}', (100, 0), text_size=12)
                     
                     if latest_record:
                         tft_updater.draw_text(f"Timestamp: {latest_record['timestamp']}", (5, 60), text_size=15)
