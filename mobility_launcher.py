@@ -63,21 +63,22 @@ def main():
                 if GPIO.input(BUTTONS[0]) == GPIO.LOW:  # Button 1 pressed
                     state = 'INIT_GPS'
                     gps_preset = stationary_preset
-                    preset_name = "Stationary Preset"
+                    preset_name = "Stationary_Preset"
                 elif GPIO.input(BUTTONS[1]) == GPIO.LOW:  # Button 2 pressed
                     state = 'INIT_GPS'
                     gps_preset = walking_preset_1
-                    preset_name = "Walking Preset 1"
+                    preset_name = "Walking_Preset_1"
                 elif GPIO.input(BUTTONS[2]) == GPIO.LOW:  # Button 3 pressed
                     state = 'INIT_GPS'
                     gps_preset = walking_preset_2
-                    preset_name = "Walking Preset 2"
+                    preset_name = "Walking_Preset_2"
                 elif GPIO.input(BUTTONS[3]) == GPIO.LOW:  # Button 4 pressed
                     state = 'INIT_GPS'
                     gps_preset = driving_preset_1
-                    preset_name = "Driving Preset 1"
+                    preset_name = "Driving_Preset_1"
 
             elif state == 'INIT_GPS':
+                time.sleep(0.5)   # small delay to debounce button press
                 gps_kalman = GpsKalman(**gps_preset)
                 gps_kalman.start()
                 state = 'RUN'
@@ -89,7 +90,7 @@ def main():
 
             elif state == 'STOP_AND_SAVE':
                 gps_kalman.stop()
-                gps_kalman.save_gps_csv()
+                gps_kalman.save_gps_csv(filename=preset_name)
                 gps_kalman = None
                 gps_preset = None
                 preset_name = ""
@@ -123,12 +124,12 @@ def main():
 
                     tft_updater.init_image()
                     tft_updater.draw_text('<- Stop and Save', (5, 0), text_size=12)
-                    tft_updater.draw_text(f'GPS Preset: {preset_name}', (100, 0), text_size=12)
+                    tft_updater.draw_text(f'{preset_name}', (150, 0), text_size=12)
                     
                     if latest_record:
                         tft_updater.draw_text(f"Timestamp: {latest_record['timestamp']}", (5, 60), text_size=15)
-                        tft_updater.draw_text(f"Raw_Lat: {latest_record['raw_latitude']:.6f}     Raw_Lon: {latest_record['raw_longitude']:.6f}", (5, 80), text_size=15)
-                        tft_updater.draw_text(f"Filt_Lat: {latest_record['filtered_latitude']:.6f}     Filt_Lon: {latest_record['filtered_longitude']:.6f}", (5, 100), text_size=15)
+                        tft_updater.draw_text(f"Raw_Lat: {latest_record['raw_latitude']:.4f}  Raw_Lon: {latest_record['raw_longitude']:.4f}", (5, 80), text_size=15)
+                        tft_updater.draw_text(f"Filt_Lat: {latest_record['filtered_latitude']:.4f}  Filt_Lon: {latest_record['filtered_longitude']:.4f}", (5, 100), text_size=15)
                         tft_updater.draw_text(f"Vel_X: {latest_record['velocity_x']:.2f} m/s     Vel_Y: {latest_record['velocity_y']:.2f} m/s", (5, 120), text_size=15)
                         speed_kmh = latest_record['speed'] * 3.6
                         tft_updater.draw_text(f"Speed: {speed_kmh:.2f} km/h     {latest_record['speed']:.2f} m/s", (5, 140), text_size=15)
@@ -138,7 +139,7 @@ def main():
                 # small time delay to prevent saturating the screen spi buffer
                 time.sleep(0.1)
 
-    except KeyboardInterrupt as e:
+    except Exception as e:
         print(f"Exception: {e}")
     finally:
         print("Exiting")

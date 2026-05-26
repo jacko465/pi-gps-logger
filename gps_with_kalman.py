@@ -130,13 +130,13 @@ class GpsKalman(GpsLogger):
 
         print(f"[{timestamp}] Raw GPS: ({latitude:.6f}, {longitude:.6f}) -> Filtered GPS: ({filtered_lat:.6f}, {filtered_lon:.6f}), dt: {dt:.2f} s, velocity: ({self.kalman_filter.x_dot:.2f} m/s, {self.kalman_filter.y_dot:.2f} m/s, speed: {self.kalman_filter.speed:.2f} m/s)")
 
-    def save_gps_csv(self):
+    def save_gps_csv(self, filename='gps_data'):
         os.makedirs('output', exist_ok=True)
         created_time = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-        filename = f'output/gps_data_{created_time}.csv'
+        filepath = f'output/{filename}_{created_time}.csv'
         df = pd.DataFrame(self.gps_data_records)
-        df.to_csv(filename, index=False)
-        print(f"Saved GPS data to {filename}")
+        df.to_csv(filepath, index=False)
+        print(f"Saved GPS data to {filepath}")
 
 
 if __name__ == '__main__':
