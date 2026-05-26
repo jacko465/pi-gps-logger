@@ -137,7 +137,7 @@ def main():
                 # small time delay to prevent saturating the screen spi buffer
                 time.sleep(0.1)
 
-    except Exception as e:
+    except KeyboardInterrupt as e:
         print(f"Exception: {e}")
     finally:
         print("Exiting")
