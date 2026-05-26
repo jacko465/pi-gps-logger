@@ -103,8 +103,15 @@ def main():
                     tft_updater.update()
 
                 elif screen_state == 'GPS_LOGGING':
+                    if gps_kalman:
+                        if gps_kalman.gps_data_records:
+                            latest_record = gps_kalman.gps_data_records[-1]
+
                     tft_updater.init_image()
                     tft_updater.draw_text('GPS Logging...', (10, 50), text_size=20)
+                    tft_updater.draw_text(f'Preset: {gps_preset}', (10, 100), text_size=15)
+                    tft_updater.draw_text('Press Button 1 to Stop and Save', (10, 150), text_size=15)
+                    
                     tft_updater.update()
 
                 # small time delay to prevent saturating the screen spi buffer
