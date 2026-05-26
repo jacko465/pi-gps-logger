@@ -94,6 +94,7 @@ def main():
 
                 if screen_state == 'INIT':
                     tft_updater = TFT_Updater()
+                    tft_updater.open_fb()
                     screen_state = 'MAIN_MENU'
 
                 elif screen_state == 'MAIN_MENU':

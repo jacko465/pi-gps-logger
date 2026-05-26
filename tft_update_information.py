@@ -15,12 +15,17 @@ class TFT_Updater:
         print('tft updater init')
     
     def __enter__(self):
-        self.fb = os.open(self.fbdev, os.O_RDWR)
+        self.open_fb()
         self.init_image()
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         os.close(self.fb)
+
+    # when not using this class as a context manager:
+    def open_fb(self):
+        self.fb = os.open(self.fbdev, os.O_RDWR)
+        return self
 
     def init_image(self, bgcolour='black'):
         self.image = Image.new('RGB', (self.screen_size), bgcolour)
