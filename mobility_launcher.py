@@ -99,8 +99,10 @@ def main():
 
                 elif screen_state == 'MAIN_MENU':
                     tft_updater.init_image()
-                    tft_updater.draw_text('Press Button 1 to Start GPS Logging', (10, 50), text_size=20)
-                    # etc
+                    tft_updater.draw_text('<- Stationary Preset', (10, 50), text_size=20)
+                    tft_updater.draw_text('<- Walking Preset 1', (10, 100), text_size=20)
+                    tft_updater.draw_text('<- Walking Preset 2', (10, 150), text_size=20)
+                    tft_updater.draw_text('<- Driving Preset 1', (10, 200), text_size=20)
                     tft_updater.update()
 
                 elif screen_state == 'GPS_LOGGING':
