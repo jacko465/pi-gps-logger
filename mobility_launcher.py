@@ -121,8 +121,8 @@ def main():
                             latest_record = gps_kalman.gps_data_records[-1]
 
                     tft_updater.init_image()
-                    tft_updater.draw_text('<- Stop and Save', (5, 0), text_size=20)
-                    tft_updater.draw_text(f'GPS Logging - Preset: {preset_name}', (50, 0), text_size=20)
+                    tft_updater.draw_text('<- Stop and Save', (5, 0), text_size=10)
+                    tft_updater.draw_text(f'GPS Preset: {preset_name}', (50, 0), text_size=10)
                     
                     if latest_record:
                         tft_updater.draw_text(f"Timestamp: {latest_record['timestamp']}", (5, 60), text_size=15)
