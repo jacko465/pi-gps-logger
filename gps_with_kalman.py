@@ -172,10 +172,13 @@ class GpsKalman(GpsLogger):
             "filtered_longitude": filtered_lon,
             "velocity_x": self.kalman_filter.x_dot,
             "velocity_y": self.kalman_filter.y_dot,
-            "speed": self.kalman_filter.speed
+            "speed": self.kalman_filter.speed,
+            "link_quality": self.link_quality,
+            "num_satellites": self.num_satellites,
+            "hdop": self.hdop
         })
 
-        print(f"[{timestamp}] Raw GPS: ({latitude:.6f}, {longitude:.6f}) -> Filtered GPS: ({filtered_lat:.6f}, {filtered_lon:.6f}), dt: {dt:.2f} s, velocity: ({self.kalman_filter.x_dot:.2f} m/s, {self.kalman_filter.y_dot:.2f} m/s, speed: {self.kalman_filter.speed:.2f} m/s), LQual: {self.link_quality}, Sats: {self.num_satellites}, HDOP: {self.hdop}")
+        print(f"[{timestamp}] Raw GPS: ({latitude:.6f}, {longitude:.6f}) -> Filtered GPS: ({filtered_lat:.6f}, {filtered_lon:.6f}), dt: {dt:.2f} s, velocity: ({self.kalman_filter.x_dot:.2f} m/s, {self.kalman_filter.y_dot:.2f} m/s, speed: {self.kalman_filter.speed:.2f} m/s), Qual: {self.link_quality}, Sats: {self.num_satellites}, HDOP: {self.hdop}")
 
     def save_gps_csv(self, filename='gps_data'):
         os.makedirs('output', exist_ok=True)
