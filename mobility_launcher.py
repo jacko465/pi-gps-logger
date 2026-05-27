@@ -81,8 +81,24 @@ def main():
                     gps_preset = driving_preset_1
                     preset_name = "Driving_Preset_1"
 
+                # run gps to show fix quality on main menu screen
+                if gps_kalman is None:
+                    gps_kalman = GpsKalman(**stationary_preset)
+                    gps_kalman.start()
+                
+                else:
+                    # update main menu screen with gps fix quality if available
+                    if gps_kalman.link_quality != link_quality or gps_kalman.num_satellites != num_sats or gps_kalman.hdop != HDOP:
+                        link_quality = gps_kalman.link_quality
+                        num_sats = gps_kalman.num_satellites
+                        HDOP = gps_kalman.hdop
+                        screen_update = True
+
             elif state == 'INIT_GPS':
                 time.sleep(0.5)   # small delay to debounce button press
+                if gps_kalman:
+                    gps_kalman.stop()
+                    gps_kalman = None
                 gps_kalman = GpsKalman(**gps_preset)
                 gps_kalman.start()
                 state = 'RUN'
@@ -117,6 +133,7 @@ def main():
                     tft_updater.draw_text('<- Walking Preset 1', (5, 60), text_size=20)
                     tft_updater.draw_text('<- Walking Preset 2', (5, 120), text_size=20)
                     tft_updater.draw_text('<- Driving Preset 1', (5, 180), text_size=20)
+                    tft_updater.draw_text(f"Link Quality: {latest_record['link_quality']} Sats: {latest_record['num_satellites']} HDOP: {latest_record['hdop']}", (5, 200), text_size=10)
                     tft_updater.update()
 
                 elif screen_state == 'GPS_LOGGING':
