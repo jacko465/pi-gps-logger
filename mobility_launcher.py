@@ -132,7 +132,7 @@ def main():
                     tft_updater.draw_text('<- Walking Preset 1', (5, 60), text_size=20)
                     tft_updater.draw_text('<- Walking Preset 2', (5, 120), text_size=20)
                     tft_updater.draw_text('<- Driving Preset 1', (5, 180), text_size=20)
-                    tft_updater.draw_text(f"Link Quality: {latest_record['link_quality']} Sats: {latest_record['num_satellites']} HDOP: {latest_record['hdop']}", (5, 200), text_size=10)
+                    tft_updater.draw_text(f"Link Quality: {link_quality} Sats: {num_sats} HDOP: {HDOP}", (5, 200), text_size=10)
                     tft_updater.update()
 
                 elif screen_state == 'GPS_LOGGING':
@@ -153,7 +153,7 @@ def main():
                         tft_updater.draw_text(f"Vel_X: {latest_record['velocity_x']:.2f} m/s     Vel_Y: {latest_record['velocity_y']:.2f} m/s", (5, 120), text_size=15)
                         speed_kmh = latest_record['speed'] * 3.6
                         tft_updater.draw_text(f"Speed: {speed_kmh:.2f} km/h     {latest_record['speed']:.2f} m/s", (5, 140), text_size=15)
-                        tft_updater.draw_text(f"Link Quality: {latest_record['link_quality']} Sats: {latest_record['num_satellites']} HDOP: {latest_record['hdop']}", (5, 160), text_size=10)
+                        tft_updater.draw_text(f"Link Quality: {link_quality} Sats: {num_sats} HDOP: {HDOP}", (5, 160), text_size=10)
                     
                     tft_updater.update()
 
