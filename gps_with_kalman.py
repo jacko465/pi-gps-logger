@@ -18,6 +18,10 @@ class GpsKalman(GpsLogger):
         self.kalman_filter = None
         self.last_timestamp = None
         
+        self.link_quality = 'No Fix'
+        self.num_satellites = 0
+        self.hdop = 'Unknown'
+
         self.gps_data_records = []
 
     def start(self):
@@ -31,6 +35,43 @@ class GpsKalman(GpsLogger):
         self.shutdown_event.set()
         self.running_thread.join()
 
+    def set_link_quality(self, quality):
+        try:
+            quality = int(quality)
+            if quality == 0:
+                self.link_quality = 'No Fix'
+            elif quality == 1:
+                self.link_quality = 'GPS Fix'
+            elif quality == 2:
+                self.link_quality = 'DGPS Fix'
+        except Exception as e:
+            print(f"Error setting link quality: {e}")
+            self.link_quality = 'Unknown'
+
+    def set_num_satellites(self, num):
+        try:
+            self.num_satellites = int(num)
+        except Exception as e:
+            print(f"Error setting number of satellites: {e}")
+            self.num_satellites = 0
+
+    def set_hdop(self, hdop):
+        try:
+            hdop = float(hdop)
+            if hdop < 1.0:
+                self.hdop = 'Ideal'
+            elif hdop < 2.0:
+                self.hdop = 'Excellent'
+            elif hdop < 5.0:
+                self.hdop = 'Good'
+            elif hdop < 10.0:
+                self.hdop = 'Moderate'
+            elif hdop >= 10.0:
+                self.hdop = 'Poor'
+        except Exception as e:
+            print(f"Error setting HDOP: {e}")
+            self.hdop = 'Unknown'
+
     def msg_handler(self, msg):
         timestamp = msg.timestamp
         latitude = msg.latitude
@@ -43,25 +84,31 @@ class GpsKalman(GpsLogger):
 
         # print(f"Converted GPS to (x: {gps_x:.2f} m, y: {gps_y:.2f} m)")
 
-        if self.last_timestamp is not None:
-            dt = self.get_dt_from_timestamps(self.last_timestamp, timestamp)
-            if dt > 0.0:    # only update if we have a valid time difference
-                if not self.is_valid_gps_data(msg):
-                    print("Received invalid GPS data, skipping")
-                else:
-                    self.kalman_filter.step(gps_x, gps_y, dt)
-                    self.report_gps_data(timestamp, dt, latitude, longitude, self.kalman_filter.x, self.kalman_filter.y)
-        else:
-            print(f"Received first GPS message, initialising kalman filter with initial coordinates (x: {gps_x:.2f} m, y: {gps_y:.2f} m)")
-            self.kalman_filter = GPSKalmanFilter(
-                initial_x=gps_x, 
-                initial_y=gps_y,
-                sigma_gps=self.sigma_gps,              # typical GPS accuracy in meters
-                sigma_accel=self.sigma_accel,            # typical acceleration noise in m/s^2
-                initial_velocity_std=self.initial_velocity_std    # initial velocity standard deviation in m/s    
-            )
+        # Preference only GGA messages
+        if msg.sentence_type == 'GGA':
+            self.set_link_quality(msg.gps_qual)
+            self.set_num_satellites(msg.num_sats)
+            self.set_hdop(msg.horizontal_dil)
 
-        self.last_timestamp = timestamp
+            if self.last_timestamp is not None:
+                dt = self.get_dt_from_timestamps(self.last_timestamp, timestamp)
+                if dt > 0.0:    # only update if we have a valid time difference
+                    if not self.is_valid_gps_data(msg):
+                        print("Received invalid GPS data, skipping")
+                    else:
+                        self.kalman_filter.step(gps_x, gps_y, dt)
+                        self.report_gps_data(timestamp, dt, latitude, longitude, self.kalman_filter.x, self.kalman_filter.y)
+            else:
+                print(f"Received first GPS message, initialising kalman filter with initial coordinates (x: {gps_x:.2f} m, y: {gps_y:.2f} m)")
+                self.kalman_filter = GPSKalmanFilter(
+                    initial_x=gps_x, 
+                    initial_y=gps_y,
+                    sigma_gps=self.sigma_gps,              # typical GPS accuracy in meters
+                    sigma_accel=self.sigma_accel,            # typical acceleration noise in m/s^2
+                    initial_velocity_std=self.initial_velocity_std    # initial velocity standard deviation in m/s    
+                )
+
+            self.last_timestamp = timestamp
 
     def is_valid_gps_data(self, msg) -> bool:
         # check for valid latitude and longitude
