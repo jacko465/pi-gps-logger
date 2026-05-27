@@ -85,7 +85,6 @@ def main():
                 if gps_kalman is None:
                     gps_kalman = GpsKalman(**stationary_preset)
                     gps_kalman.start()
-                
                 else:
                     # update main menu screen with gps fix quality if available
                     if gps_kalman.link_quality != link_quality or gps_kalman.num_satellites != num_sats or gps_kalman.hdop != HDOP:
@@ -161,7 +160,7 @@ def main():
                 # small time delay to prevent saturating the screen spi buffer
                 time.sleep(0.1)
 
-    except Exception as e:
+    except KeyboardInterrupt as e:
         print(f"Exception: {e}")
     finally:
         print("Exiting")
