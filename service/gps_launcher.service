@@ -4,9 +4,9 @@ After=multi-user.target
 
 [Service]
 Type=simple
-User=exothermic
-WorkingDirectory=/home/exothermic/pi-gps-logger
-ExecStart=/home/exothermic/pi-gps-logger/.venv/bin/python /home/exothermic/pi-gps-logger/mobility_launcher.py
+User=<your-username>
+WorkingDirectory=/home/<your-username>/pi-gps-logger
+ExecStart=/home/<your-username>/pi-gps-logger/.venv/bin/python /home/<your-username>/pi-gps-logger/mobility_launcher.py
 Restart=on-failure
 RestartSec=5
 StandardOutput=journal
