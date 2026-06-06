@@ -10,8 +10,8 @@ class GPSKalmanFilter:
 
         A = state transition matrix
         H = measurement matrix
-        R = process noise covariance
-        Q = measurement noise covariance
+        Q = process noise covariance
+        R = measurement noise covariance
         Sigma = state covariance
 
         Dials:
@@ -73,7 +73,7 @@ class GPSKalmanFilter:
             [0.0, 0.0, 0.0, 1.0]  # y_dot' = y_dot (constant velocity)
         ], dtype=float)
     
-    def make_R(self, dt: float) -> np.ndarray:
+    def make_Q(self, dt: float) -> np.ndarray:
         """
             Process noise covariance
             Models unknown acceleration as random noise
@@ -88,7 +88,7 @@ class GPSKalmanFilter:
                 Not measuring acceleration (ax, ay) directly, modelling it as zero-mean noise
                 with variance sigma_accel^2
 
-                R = G * sigma * G^T where G maps acceleration noise into state space (Jacobian)
+                Q = G * sigma * G^T where G maps acceleration noise into state space (Jacobian)
         """
         sigma_a2 = self.sigma_accel**2
 
@@ -99,7 +99,7 @@ class GPSKalmanFilter:
             [0.0, dt**3/2, 0.0, dt**2]     # y velocity variance
         ], dtype=float)
     
-    def make_Q(self, sigma_gps: float) -> np.ndarray:
+    def make_R(self, sigma_gps: float | None = None) -> np.ndarray:
         """
             Measurement noise covariance
         """
@@ -114,19 +114,19 @@ class GPSKalmanFilter:
     def predict(self, dt: float):
         """
             mu_bar = A * mu
-            sigma_bar = A * sigma * A^T + R
+            sigma_bar = A * sigma * A^T + Q
         """
         A = self.make_A(dt)
-        R = self.make_R(dt)
+        Q = self.make_Q(dt)
 
         self.mu = A @ self.mu
-        self.sigma = A @ self.sigma @ A.T + R
+        self.sigma = A @ self.sigma @ A.T + Q
 
     def update(self, gps_x: float, gps_y: float, sigma_gps: float | None = None):
         """
             Update/correction step using GPS measurement
 
-            K = sigma_bar * H^T * (H * sigma_bar * H^T + Q)^-1
+            K = sigma_bar * H^T * (H * sigma_bar * H^T + R)^-1
             mu = mu_bar + K * (z - H * mu_bar)
             sigma = (I - K * H) * sigma_bar
         """
@@ -135,10 +135,10 @@ class GPSKalmanFilter:
             [gps_y]   # GPS y measurement
         ], dtype=float)
         
-        Q = self.make_Q(sigma_gps)
+        R = self.make_R(sigma_gps)
 
         innovation = z - self.H @ self.mu
-        innovation_covariance = self.H @ self.sigma @ self.H.T + Q
+        innovation_covariance = self.H @ self.sigma @ self.H.T + R
 
         # K = self.sigma @ self.H.T @ np.linalg.inv(innovation_covariance)
         # Using solve for better numerical stability instead of explicit inverse
